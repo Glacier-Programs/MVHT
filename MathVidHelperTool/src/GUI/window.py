@@ -5,6 +5,7 @@ from pygame.time import Clock
 from typing import NoReturn
 
 from GUI.deeperElements import Button, AnimatedElement, Element, HoverElement
+from GUI.dropDown import DropdownPopup
 from MVHT.Util.settings import BASICBACKGROUNDCOL, MAXFPS
 from MVHT.Util import Global
 
@@ -22,6 +23,15 @@ class Window:
     def size(self) -> tuple[int]:
         return self.display.get_size()
 
+    @property
+    def center(self) -> tuple[int]:
+        size = self.size
+        return [size[0]/2, size/2]
+
+    def center_element(self, element : Element) -> tuple[int]:
+        ''' return the coordinates needed to center an element on screen '''
+        pass
+
     def add_element(self, el : Element) -> None:
         self._add_element(el)
 
@@ -37,7 +47,6 @@ class Window:
             self._loop()
 
     def _add_element(self, el : Element) -> None:
-        print('Added: ', el)
         if isinstance(el, Button):
             self.elements['buttons'].append(el)
         if isinstance(el, AnimatedElement):
@@ -73,11 +82,13 @@ class Window:
 
         Global.set_var('mcoords', mouse.get_pos())
         for hover in self.elements['hover']:
-            if hover.get_col():
+            intersect = hover.get_col()
+            if intersect and not hover in self.elements['hovering']: # they interesct but arent already in the list
                 hover.on_hover()
                 self.elements['hovering'].append(hover)
-            elif hover in self.elements['hovering']:
-                hover.on_off_hover()
+            elif not intersect and hover in self.elements['hovering']: # the exact opposite of the last if
+                self.elements['hovering'].remove(hover) # remove it from list of hovered objects
+                hover.on_off_hover() # apply event for when its no longer hovered
     
     def _draw_screen(self) -> None:
         self.display.fill(BASICBACKGROUNDCOL)
