@@ -1,14 +1,16 @@
 from typing import Callable
 
 from MVHT.Util.Global import get_var
+from MVHT.Util.color import WHITE
 from MVHT.Util.settings import DEFAULTFONTCOLOR
 from .element import *
 
 class TextButton(Button):
-    def __init__(self, coords: list[int], width: int, height: int, text : str, c: tuple[int] = ..., 
+    def __init__(self, coords: list[int], width: int, height: int, text : str, font : Font, c: tuple[int] = BLACK, 
                  on_click: Callable[[], None] = False) -> None:
         super().__init__(coords, width, height, c=c, on_click=on_click)
-
+        self.sprite.blit(font.render(text, True, WHITE), (0,0))
+        
 class Frame(Button, HoverElement):
     # can contain buttons, so inherits from button in order to be considered clickable
     # same for inheriting HoverElement
@@ -36,7 +38,6 @@ class Frame(Button, HoverElement):
             self.subs['hover'].append(element)
         self.subs['static'].append(element)
         self.post_to_sprite(element)
-        print('added: ', element)
 
     def create_element(self, type, *args, **kwargs) -> None:
         # create an element directly in frame subelements dict
@@ -48,3 +49,13 @@ class Frame(Button, HoverElement):
 
     def post_to_sprite(self, element : Element) -> None:
         self.sprite.blit(element.sprite, element.coords)
+
+class Popup(Frame):
+    def __init__(self, coords: list[int], width: int, height: int, c: tuple[int] = BLACK, buts: list[Button] = [], anims: list[AnimatedElement] = [], static: list[Element] = []) -> None:
+        super().__init__(coords, width, height, c=c, buts=buts, anims=anims, static=static)
+    
+    def pop_up(self) -> None:
+        get_var('WINDOW').add_element(self)
+
+    def pop_down(self) -> None:
+        get_var('WINDOW').remove_element(self)
