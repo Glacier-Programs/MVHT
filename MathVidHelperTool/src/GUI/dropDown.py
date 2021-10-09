@@ -1,7 +1,8 @@
+from pygame import Surface
 from pygame.font import Font
 from typing import Callable
 
-from .deeperElements import Frame, AnimatedElement, Element, Button
+from .deeperElements import Frame, AnimatedElement, Element, Button, TextButton
 
 from MVHT.Util.Global import get_var
 from MVHT.Util.settings import DEFAULTFONTCOLOR
@@ -36,7 +37,6 @@ class DropdownMenu(Frame, AnimatedElement):
             self.poppedOut = True
 
     def on_off_hover(self) -> None:
-        print('off hover')
         self.steps = 0
         self.poppedOut = False
         self.popUp.pop_down()
@@ -44,26 +44,37 @@ class DropdownMenu(Frame, AnimatedElement):
     def on_anim(self) -> None:
         dTime : float = get_var('WINDOW').CLOCK.get_time()
 
+
 class DropdownPopup(Frame):
     def __init__(self, parent : DropdownMenu, c : tuple[int] = BLACK) -> None:
         self.parent = parent
-        super().__init__([parent.coords[0], parent.coords[1] + parent.height], parent.width, 0, c=(0,255,0))
-    
+        super().__init__([parent.coords[0], parent.coords[1] + parent.height], parent.width, 0, c=c, anims=[], static=[], buts=[]) # lists need to be made since super() otherwise makes self.subs the same for all subclasses
+
+    def get_extra_info(self) -> str:
+        return 'Option-Count: {}'.format(len(self.subs['buttons']))
+
+    def get_col(self) -> None:
+        return self.parent.get_col() or super().get_col()
+
     def add_option(self, name : str, font : Font, onClick : Callable) -> None:
-        if len(name) * 5 > self.width:
-            self.width = len(name) * 5
-        btn = Button([0, len(self.subs['buttons']) * 25], self.width, 25, on_click=onClick)
+        if len(name) * 10 > self.width:
+            self.width = len(name) * 10
+        self.height += 25
+        self.update_size()
+        btn = TextButton([0, len(self.subs['buttons']) * 25], self.width, 25, name, font, on_click=onClick, c=self.c)
         self.add_element(btn)
 
-    def update_size(self) -> None:
-        pass
+    def on_off_hover(self) -> None:
+        self.parent.on_off_hover()
+        self.pop_down()
 
-    def pop_up(self):
+    def update_size(self) -> None:
+        newsprite = Surface((self.width, self.height))
+        newsprite.blit(self.sprite, (0,0))
+        self.sprite = newsprite
+
+    def pop_up(self) -> None:
         get_var('WINDOW').add_element(self)
     
-    def pop_down(self):
+    def pop_down(self) -> None:
         get_var('WINDOW').remove_element(self)
-
-class DropdownElement(Button):
-    def __init__(self, coords: list[int], width: int, height: int, c: tuple[int] = ..., on_click: Callable[[], None] = False) -> None:
-        super().__init__(coords, width, height, c=c, on_click=on_click)
