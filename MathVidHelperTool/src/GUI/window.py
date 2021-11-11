@@ -120,8 +120,5 @@ class Window:
         self.display.fill(BASICBACKGROUNDCOL)
         for key in self.elements:
             for el in self.elements[key]:
-                if isinstance(el, WorkspaceFrame):
-                    el.arender(self.display)
-                    continue
                 el.render(self.display)
         display.flip()
