@@ -30,7 +30,7 @@ class DropdownMenu(Frame, AnimatedElement):
             widths += el.width
         addedEl.coords[0] = widths
 
-    def on_hover(self) -> None:
+    def on_hover(self, mcoords : tuple[int]) -> None:
         self.on_anim()
         if not self.poppedOut:
             self.popUp.pop_up()
@@ -53,15 +53,15 @@ class DropdownPopup(Frame):
     def get_extra_info(self) -> str:
         return 'Option-Count: {}'.format(len(self.subs['buttons']))
 
-    def get_col(self) -> None:
-        return self.parent.get_col() or super().get_col()
+    def get_col(self, mcoords : tuple[int]) -> None:
+        return self.parent.get_col(mcoords) or super().get_col(mcoords)
 
     def add_option(self, name : str, font : Font, onClick : Callable) -> None:
         if len(name) * 10 > self.width:
             self.width = len(name) * 10
         self.height += 25
         self.update_size()
-        btn = TextButton([0, len(self.subs['buttons']) * 25], self.width, 25, name, font, on_click=onClick, c=self.c)
+        btn = TextButton([0, len(self.subs['buttons']) * 25], self.width, 25, name, font, onClick=onClick, c=self.c)
         self.add_element(btn)
 
     def on_off_hover(self) -> None:
@@ -74,7 +74,7 @@ class DropdownPopup(Frame):
         self.sprite = newsprite
 
     def pop_up(self) -> None:
-        get_var('WINDOW').add_element(self)
+        get_var('WINDOW').add_element(self, priority = True)
     
     def pop_down(self) -> None:
         get_var('WINDOW').remove_element(self)
